@@ -15,3 +15,6 @@ Examples:
 - The complication with the highest mortality from measles is {{c1::pneumonia}} | Most fatal cases from measles result from {{c1::pneumonia}} | {{c1::Pneumonia}} is the deadliest complication from measles.
 # Click Words
 This cloze-style card provides possible choices to complete sentences, making grammar exercises more manageable. For instance, to practice the present continuous tense, you might have a sentence like "Today I am [...] tennis.". The issue with the sentence there are too many correct answers (playing, studying, done through) having choices provided to you (e.g., playing, played, plays) helps control the difficulty level.
+# Other peoples note types
+- [Puzzle Sentences](https://ankiweb.net/shared/info/1522392024)
+- [Interactive card template from cjdduarte](https://forums.ankiweb.net/t/interactive-flashcard-template-with-drag-and-drop-feedback/48977)
