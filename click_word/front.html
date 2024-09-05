@@ -1,0 +1,100 @@
+<p id="sentence-field" style="display:none;">{{Sentence}}</p>
+<p id="additional-words-field" style="display:none;">{{Aditional Words}}</p>
+
+<div class="game-container">
+  <h1>{{Title}}</h1>
+  <div id="sentence"></div>
+  <div id="words"></div>
+  <button id="checkButton">Check Answers</button>
+</div>
+
+<script>
+  function run() {
+    const isBack = document.getElementById("back") != null
+    const originalSentence = document.getElementById("sentence-field").innerText;
+    const sentence = document.getElementById('sentence');
+    const wordsContainer = document.getElementById('words');
+    const checkButton = document.getElementById('checkButton');
+    const additionalWords = document.getElementById('additional-words-field').innerText.split("|").map(word => word.trim());
+    let blanks = [];
+    let words = [];
+
+    function initializeGame() {
+      let parts = originalSentence.split(/\[|\]/);
+      let html = '';
+      words = [];
+
+      parts.forEach((part, index) => {
+        if (index % 2 === 0) {
+          html += part;
+        } else {
+          html += `<span class="blank" data-word="${part}"></span>`;
+          words.push(part);
+        }
+      });
+      words = !isBack ? words.concat(additionalWords) : localStorage.getItem("words").split(",")
+
+      sentence.innerHTML = html;
+      blanks = Array.from(sentence.getElementsByClassName('blank'));
+
+      updateWordBank();
+      if (!isBack) {
+        localStorage.removeItem("blanks")
+      } else {
+        localStorage.getItem("blanks").split(",").forEach((blank, index) => blanks[index].textContent = blank)
+      }
+
+      wordsContainer.addEventListener('click', handleWordClick);
+      sentence.addEventListener('click', handleBlankClick);
+      checkButton.addEventListener('click', checkAnswers);
+      if (isBack) checkAnswers()
+
+    }
+
+    function updateWordBank() {
+      words.sort(() => Math.random() - 0.5);
+      wordsContainer.innerHTML = words.map(word => `<span class="word">${word}</span>`).join('');
+    }
+
+    function handleWordClick(event) {
+      if (event.target.classList.contains('word')) {
+        const word = event.target.textContent;
+        const emptyBlank = blanks.find(blank => !blank.textContent);
+
+        if (emptyBlank) {
+          emptyBlank.textContent = word;
+          event.target.style.display = 'none';
+          words = words.filter(w => w !== word);
+          localStorage.setItem("words", words)
+          localStorage.setItem("blanks", blanks.map(blank => blank.textContent))
+        }
+      }
+    }
+
+    function handleBlankClick(event) {
+      if (event.target.classList.contains('blank') && event.target.textContent) {
+        const word = event.target.textContent;
+        event.target.textContent = '';
+        event.target.classList.remove('correct', 'incorrect');
+        words.push(word);
+        updateWordBank();
+        localStorage.setItem("words", words)
+        localStorage.setItem("blanks", blanks.map(blank => blank.textContent))
+      }
+    }
+
+    function checkAnswers() {
+      let allCorrect = true;
+      blanks.forEach(blank => {
+        const isCorrect = blank.textContent === blank.dataset.word;
+        blank.classList.remove('correct', 'incorrect');
+        blank.classList.add(isCorrect ? 'correct' : 'incorrect');
+        allCorrect = allCorrect && isCorrect;
+      });
+
+    }
+
+    initializeGame();
+  }
+  run()
+</script>

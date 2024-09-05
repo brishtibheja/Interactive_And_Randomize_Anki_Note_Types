@@ -1,0 +1,177 @@
+<div style="display:none;">[sound:1-second-and-500-milliseconds-of-silence.mp3]</div>
+<script>
+  document.querySelector(".soundLink").click()
+</script>
+<p id="keys" style="display:none;">{{First List}}</p>
+<p id="values" style="display:none;">{{Second List}}</p>
+
+<div class="game-container">
+  <div id="wordList" class="word-lists">
+  </div>
+  <div id="horizontalWords"></div>
+  <button id="checkButton">Check</button>
+  <div id="result"></div>
+</div>
+
+<script>
+  function run() {
+    let isBack = document.getElementById("back") !== null;
+    let map = new Map()
+    const keys = document.getElementById("keys").innerHTML.split("|").map(text => text.replace("&nbsp;", "").trim())
+    let values = document.getElementById("values").innerHTML.split("|").map(text => text.replace("&nbsp;", "").trim())
+    keys.forEach((key, index) => map.set(key, values[index]))
+    let firstList = keys
+    let secondList = values
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    const shuffledFirstList = isBack ? JSON.parse(localStorage.getItem("shuffledFirstList")) : shuffle([...firstList]);
+    const shuffledSecondList = isBack ? JSON.parse(localStorage.getItem("shuffledSecondList")) : shuffle([...values]);
+
+    const horizontalWordsElement = document.getElementById('horizontalWords');
+    const resultElement = document.getElementById('result');
+    const wordLists = document.getElementById("wordList");
+    wordLists.style["grid-template-rows"] = `repeat(${keys.length}, fit-content)`;
+
+    shuffledFirstList.forEach(word => {
+      const wordElement = document.createElement('div');
+      wordElement.innerHTML = word;
+      wordElement.className = 'word';
+      wordLists.appendChild(wordElement);
+    });
+
+    shuffledFirstList.forEach(() => {
+      const matchSlot = document.createElement('div');
+      matchSlot.className = 'match-slot';
+      matchSlot.addEventListener('dragover', allowDrop);
+      matchSlot.addEventListener('drop', drop);
+      matchSlot.addEventListener('click', unmatchWord);
+      wordList.appendChild(matchSlot);
+    });
+
+    shuffledSecondList.forEach(word => {
+      createHorizontalWord(word);
+    });
+
+    function createHorizontalWord(word) {
+      const wordElement = document.createElement('span');
+      wordElement.innerHTML = word;
+      wordElement.className = 'horizontal-word';
+      wordElement.draggable = true;
+      wordElement.addEventListener('dragstart', drag);
+      wordElement.addEventListener('click', () => matchWord(word, wordElement));
+      horizontalWordsElement.appendChild(wordElement);
+    }
+
+    function matchWord(word, element) {
+      const emptySlot = Array.from(wordList.children).find(slot => slot.className === 'match-slot' && !slot.innerHTML);
+      if (emptySlot) {
+        emptySlot.innerHTML = word;
+        element.remove();
+        clearResult();
+      }
+    }
+
+    function allowDrop(event) {
+      event.preventDefault();
+    }
+
+    function drag(event) {
+      event.dataTransfer.setData("text", event.target.innerHTML);
+    }
+
+    function drop(event) {
+      event.preventDefault();
+      const data = event.dataTransfer.getData("text");
+      if (event.target.className === 'match-slot' && !event.target.innerHTML) {
+        event.target.innerHTML = data;
+        const draggedElement = Array.from(horizontalWordsElement.children).find(el => el.innerHTML === data);
+        if (draggedElement) {
+          draggedElement.remove();
+        }
+        clearResult();
+      }
+    }
+
+    function unmatchWord(event) {
+      const slot = event.target;
+      slot.style["background"] = "white"
+      slot.style["color"] = "black"
+      slot.style["font-weight"] = "normal"
+      if (slot.innerHTML) {
+        createHorizontalWord(slot.innerHTML);
+        slot.innerHTML = '';
+        clearResult();
+      }
+    }
+
+    function clearResult() {
+      resultElement.innerHTML = '';
+      resultElement.style.color = '';
+    }
+
+    function updateSecondListLocalStorage(mutationList, observer) {
+      let itemsInSecondList = Array.from(wordList.children).map(slot => slot).filter(element => element.className === "match-slot").map(element => element.innerHTML)
+      let horizontalItems = Array.from(horizontalWordsElement.children).map(word => word.innerHTML)
+      if (!isBack) {
+        localStorage.setItem("secondList", JSON.stringify(itemsInSecondList));
+        localStorage.setItem("shuffledSecondList", JSON.stringify(horizontalItems));
+      }
+    }
+
+    function check() {
+      const matchedWords = Array.from(wordList.children).map(slot => slot);
+      const firstListElement = matchedWords.filter(element => element.className == "word")
+      const secondListElement = matchedWords.filter(element => element.className == "match-slot")
+      let isCorrect = true
+      for (let i = 0; i < shuffledFirstList.length; i++) {
+        let expectedWord = map.get(shuffledFirstList[i])
+        if (secondListElement[i].innerHTML !== expectedWord) {
+          isCorrect = false
+          secondListElement[i].style["background"] = "#ff4b4b"
+        } else {
+          secondListElement[i].style["background"] = "#89e219"
+        }
+        secondListElement[i].style["color"] = "white"
+        secondListElement[i].style["font-weight"] = "bold"
+      }
+      resultElement.textContent = isCorrect ? 'Correct! You matched all words correctly!' : 'Sorry, that\'s not correct. Try again!';
+      resultElement.style.color = isCorrect ? 'green' : '#ff4b4b';
+    }
+
+    const observer = new MutationObserver(updateSecondListLocalStorage)
+    observer.observe(wordList, {attributes: false, childList: true, subtree: true})
+
+    if (!isBack) {
+      localStorage.setItem("shuffledFirstList", JSON.stringify(shuffledFirstList))
+      localStorage.setItem("shuffledSecondList", JSON.stringify(shuffledSecondList))
+      document.getElementById("checkButton").style["display"] = "none";
+    } else {
+      let secondListItems = JSON.parse(localStorage.getItem("secondList"))
+      console.log(secondListItems)
+      secondListItems.forEach(item => {
+        const matchSlot = Array.from(wordList.children).find(slot => slot.className === 'match-slot' && !slot.innerHTML);
+        if (matchSlot) {
+          matchSlot.innerHTML = item;
+          const horizontalWord = Array.from(horizontalWordsElement.children).find(word => word.innerHTML === item);
+          if (horizontalWord) {
+            horizontalWord.remove();
+          }
+        }
+      })
+      check()
+      localStorage.removeItem("secondList")
+      localStorage.removeItem("shuffledFirstList")
+      localStorage.removeItem("shuffledSecondList")
+    }
+
+    document.getElementById("checkButton").addEventListener("click", check)
+  }
+  run()
+</script>

@@ -1,0 +1,16 @@
+{{FrontSide}}
+
+<hr id=answer>
+
+{{Back}}
+
+<div id="hidden">{{Front}}</div>
+<div id="target"></div>
+
+<script>
+  (() => {
+    let clozes = document.getElementById("hidden").innerHTML.split("|")
+    let rng = localStorage.getItem("rng", rng)
+    document.getElementById("target").innerHTML = clozes[rng]
+  })()
+</script>

@@ -1,0 +1,13 @@
+<div id="hidden">{{cloze:Text}}</div>
+<div id="target"></div>
+
+<br>
+{{Back Extra}}
+
+<script>
+  (() => {
+    const clozes = document.getElementById("hidden").innerHTML.split("|")
+    const rng = localStorage.getItem("rng")
+    document.getElementById("target").innerHTML = clozes[rng]
+  })()
+</script>
