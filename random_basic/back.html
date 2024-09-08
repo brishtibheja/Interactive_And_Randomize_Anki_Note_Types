@@ -10,7 +10,7 @@
 <script>
   (() => {
     let clozes = document.getElementById("hidden").innerHTML.split("|")
-    let rng = localStorage.getItem("rng", rng)
+    let rng = localStorage.getItem("rng")
     document.getElementById("target").innerHTML = clozes[rng]
   })()
 </script>
