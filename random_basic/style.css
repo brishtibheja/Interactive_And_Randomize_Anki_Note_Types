@@ -10,3 +10,14 @@
 #hidden {
   display: none;
 }
+
+.warning {
+  display: none;
+  border-radius: 16px;
+  border: white dotted;
+  max-width: 90%;
+}
+
+.close {
+  margin-left: 90%;
+}

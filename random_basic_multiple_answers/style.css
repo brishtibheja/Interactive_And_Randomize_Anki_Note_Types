@@ -6,14 +6,6 @@
   background-color: white;
 }
 
-.cloze {
-  font-weight: bold;
-  color: blue;
-}
-
-.nightMode .cloze {
-  color: lightblue;
-}
 
 #hidden {
   display: none;
@@ -24,9 +16,16 @@
   border-radius: 16px;
   border: white dotted;
   max-width: 90%;
-  padding: 10px;
 }
 
 .close {
   margin-left: 90%;
+}
+
+.hidden {
+  display: none;
+}
+
+#error {
+  color: red;
 }
