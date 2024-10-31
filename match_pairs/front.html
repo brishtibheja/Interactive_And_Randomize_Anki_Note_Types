@@ -104,6 +104,9 @@
       createWordElement(word, isHorizontal = false) {
         const element = document.createElement(isHorizontal ? 'span' : 'div');
         element.innerHTML = word;
+        element.querySelectorAll("img").forEach((img) => {
+          img.setAttribute("draggable", "false");
+        });
         element.className = isHorizontal ? 'horizontal-word' : 'word';
 
         if (isHorizontal) {
